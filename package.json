@@ -1,0 +1,23 @@
+{
+  "name": "ecomerce-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsc-watch --onSuccess \"node --env-file=.env ./lib/index.js\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "firebase-admin": "^13.0.2"
+  },
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.8",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.7",
+    "tsc-watch": "^6.2.1",
+    "typescript": "^5.7.3"
+  }
+}

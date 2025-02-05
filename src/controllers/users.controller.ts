@@ -1,0 +1,110 @@
+import { NextFunction, Request, Response } from "express";
+import { getFirestore } from 'firebase-admin/firestore'
+import { ValidationError } from "../erros/validation.error";
+import { NotFoundError } from "../erros/not-found.error";
+
+type User = {
+    id: number,
+    name: string,
+    email: string
+}
+
+export class UsersController {
+    static async getAll(req: Request, res: Response, next: NextFunction) {
+        try {
+            const snapshot = await getFirestore().collection('users').get()
+            const users = snapshot.docs.map((doc) => {
+                return {
+                    id: doc.id,
+                    ...doc.data()
+                }
+            })
+
+            res.send({
+                users
+            })
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    static async getById(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.params.id
+            const doc = await getFirestore().collection('users').doc(userId).get()
+
+            if (!doc.exists) {
+                throw new NotFoundError('Resource not found')
+            }
+
+            let user = {
+                id: doc.id,
+                ...doc.data()
+            }
+
+            res.send({
+                user
+            })
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    static async save(req: Request, res: Response, next: NextFunction) {
+        try {
+            const user = req.body
+
+            if (!user.email || user.email?.length === 0) {
+                throw new ValidationError('Email is required')
+            }
+
+            if (!user.name || user.name?.length === 0) {
+                throw new ValidationError('Name is required')
+            }
+
+            await getFirestore().collection('users').add(user)
+
+            res.status(201).send({
+                message: `Usuário criado com sucesso!`
+            })
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    static async update(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.params.id
+            const user = req.body as User
+
+            const doc = await getFirestore().collection("users").doc(userId)
+
+            if (!(await doc.get()).exists) {
+                throw new NotFoundError('Resource not found')
+            }
+
+            await doc.set({
+                nome: user.name,
+                email: user.email
+            })
+
+            res.send({
+                message: 'Usuário editado com sucesso!'
+            })
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    static async delete(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.params.id
+
+            await getFirestore().collection("users").doc(userId).delete()
+
+            res.status(204).end()
+        } catch (error) {
+            next(error)
+        }
+    }
+}
