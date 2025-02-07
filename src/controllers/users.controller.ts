@@ -1,13 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { getFirestore } from 'firebase-admin/firestore'
-import { ValidationError } from "../erros/validation.error";
 import { NotFoundError } from "../erros/not-found.error";
-
-type User = {
-    id: number,
-    name: string,
-    email: string
-}
+import { User } from "../models/user.model";
 
 export class UsersController {
     static async getAll(req: Request, res: Response, next: NextFunction) {
@@ -44,14 +38,6 @@ export class UsersController {
 
     static async save(req: Request, res: Response, next: NextFunction) {
         const user = req.body
-
-        if (!user.email || user.email?.length === 0) {
-            throw new ValidationError('Email is required')
-        }
-
-        if (!user.name || user.name?.length === 0) {
-            throw new ValidationError('Name is required')
-        }
 
         await getFirestore().collection('users').add(user)
 
