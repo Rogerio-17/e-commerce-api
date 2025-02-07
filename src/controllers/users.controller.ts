@@ -11,100 +11,80 @@ type User = {
 
 export class UsersController {
     static async getAll(req: Request, res: Response, next: NextFunction) {
-        try {
-            const snapshot = await getFirestore().collection('users').get()
-            const users = snapshot.docs.map((doc) => {
-                return {
-                    id: doc.id,
-                    ...doc.data()
-                }
-            })
-
-            res.send({
-                users
-            })
-        } catch (error) {
-            next(error)
-        }
-    }
-
-    static async getById(req: Request, res: Response, next: NextFunction) {
-        try {
-            const userId = req.params.id
-            const doc = await getFirestore().collection('users').doc(userId).get()
-
-            if (!doc.exists) {
-                throw new NotFoundError('Resource not found')
-            }
-
-            let user = {
+        const snapshot = await getFirestore().collection('users').get()
+        const users = snapshot.docs.map((doc) => {
+            return {
                 id: doc.id,
                 ...doc.data()
             }
+        })
 
-            res.send({
-                user
-            })
-        } catch (error) {
-            next(error)
+        res.send({
+            users
+        })
+    }
+
+    static async getById(req: Request, res: Response, next: NextFunction) {
+        const userId = req.params.id
+        const doc = await getFirestore().collection('users').doc(userId).get()
+
+        if (!doc.exists) {
+            throw new NotFoundError('Resource not found')
         }
+
+        let user = {
+            id: doc.id,
+            ...doc.data()
+        }
+
+        res.send({
+            user
+        })
     }
 
     static async save(req: Request, res: Response, next: NextFunction) {
-        try {
-            const user = req.body
+        const user = req.body
 
-            if (!user.email || user.email?.length === 0) {
-                throw new ValidationError('Email is required')
-            }
-
-            if (!user.name || user.name?.length === 0) {
-                throw new ValidationError('Name is required')
-            }
-
-            await getFirestore().collection('users').add(user)
-
-            res.status(201).send({
-                message: `Usuário criado com sucesso!`
-            })
-        } catch (error) {
-            next(error)
+        if (!user.email || user.email?.length === 0) {
+            throw new ValidationError('Email is required')
         }
+
+        if (!user.name || user.name?.length === 0) {
+            throw new ValidationError('Name is required')
+        }
+
+        await getFirestore().collection('users').add(user)
+
+        res.status(201).send({
+            message: `Usuário criado com sucesso!`
+        })
     }
 
     static async update(req: Request, res: Response, next: NextFunction) {
-        try {
-            const userId = req.params.id
-            const user = req.body as User
+        const userId = req.params.id
+        const user = req.body as User
 
-            const doc = await getFirestore().collection("users").doc(userId)
+        const doc = await getFirestore().collection("users").doc(userId)
 
-            if (!(await doc.get()).exists) {
-                throw new NotFoundError('Resource not found')
-            }
-
-            await doc.set({
-                nome: user.name,
-                email: user.email
-            })
-
-            res.send({
-                message: 'Usuário editado com sucesso!'
-            })
-        } catch (error) {
-            next(error)
+        if (!(await doc.get()).exists) {
+            throw new NotFoundError('Resource not found')
         }
+
+        await doc.set({
+            nome: user.name,
+            email: user.email
+        })
+
+        res.send({
+            message: 'Usuário editado com sucesso!'
+        })
     }
 
     static async delete(req: Request, res: Response, next: NextFunction) {
-        try {
-            const userId = req.params.id
+        const userId = req.params.id
 
-            await getFirestore().collection("users").doc(userId).delete()
+        await getFirestore().collection("users").doc(userId).delete()
 
-            res.status(204).end()
-        } catch (error) {
-            next(error)
-        }
+        res.status(204).end()
     }
 }
